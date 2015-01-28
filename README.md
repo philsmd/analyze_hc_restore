@@ -13,7 +13,7 @@ Software:
 
 * Clone this repository:  
     git clone https://github.com/philsmd/analyze_hc_restore.git  
-* Enter the repository root folder:
+* Enter the repository root folder:  
     cd analyze_hc_restore
 * Run it:  
     ./analyze_hc_restore.pl oclHashcat.restore
@@ -22,7 +22,7 @@ Software:
 # Usage and command line options
 
 A very interesting feature of this tool is, that it is able to modify .restore files (besides making them human-readable).
-To list the OPTIONS available use:
+To list the OPTIONS available use:  
     ./analyze_hc_restore.pl --help
 
 # Hacking
