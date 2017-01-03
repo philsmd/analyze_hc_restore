@@ -30,7 +30,7 @@ sub usage
   print "-Q | --quiet-mode                Print only what is necessary, don't print .restore file info etc\n";
 
   print "\ngeneral OPTIONS for the .restore file:\n";
-  print "-V | --version VERSION           Set the oclHashcat number to VERSION\n";
+  print "-V | --version NUM               Set the hashcat version to NUM\n";
   print "-C | --cwd PATH                  Set the working directory to PATH\n";
   print "-D | --dictpos NUM               Set the number of dictionary to NUM. This is the current position if there are more than one dict\n";
   print "-M | --maskpos NUM               Set the current position within the .hcmask file to NUM\n";
@@ -76,7 +76,7 @@ sub usage
   print "-4 | --custom-charset4 VALUE     Set the --custom-charset4 to VALUE\n";
   print "-x | --increment-min NUM         Set the --increment-min to NUM\n";
   print "-Y | --increment-max NUM         Set the --increment-max to NUM\n";
-  print "-S | --set option=VALUE          Add a list of specific oclHashcat options [option] to the values indicated by [VALUE]. This list is comma-separated\n";
+  print "-S | --set option=VALUE          Add a list of specific hashcat options [option] to the values indicated by [VALUE]. This list is comma-separated\n";
   print "-R | --rem option[=VALUE]        Remove specific switch(es) or parameter(s) from the command line. This list is comma-separated\n";
 }
 
@@ -93,8 +93,8 @@ sub print_file_content
 
   my $version = sprintf ("%.02f", ($contents{'version_bin'} / 100));
 
-  print "oclHashcat .restore file: '$file_name':\n";
-  print "  oclHashcat version.: " . $version . "\n";
+  print "hashcat .restore file: '$file_name':\n";
+  print "  hashcat version.: " . $version . "\n";
   print "  working directory..: " . $contents{'cwd'} . "\n";
   print "  process id.........: " . $contents{'pid'} . "\n";
   print "  dictionary number..: " . $contents{'dictpos'} . "\n";
@@ -1350,7 +1350,7 @@ if ($restore_file_modified == 1)
 
       if (($outfile_format_param < 1) || ($outfile_format_param > 15))
       {
-        print "\nERROR: the --outfile-format specified is not supported by oclHashcat\n";
+        print "\nERROR: the --outfile-format specified is not supported by hashcat\n";
 
         exit (1);
       }
@@ -1448,7 +1448,7 @@ if ($restore_file_modified == 1)
       if ((! is_already_in_cmd_line ($file_info{'argv'}, "-r")) && (! is_already_in_cmd_line ($file_info{'argv'}, "--rules-file")) && 
           (! is_already_in_cmd_line ($file_info{'argv'}, "-g")) && (! is_already_in_cmd_line ($file_info{'argv'}, "--generate-rules")))
       {
-        print "\nERROR: the command line switch --debug-mode requires that oclHashcat uses some rules\n";
+        print "\nERROR: the command line switch --debug-mode requires that hashcat uses some rules\n";
 
         exit (1);
       }

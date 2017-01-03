@@ -1,6 +1,6 @@
 # About
 
-The goal of this project is to make the content of a oclHashcat .restore file human-readable.
+The goal of this project is to make the content of a hashcat .restore file human-readable.
 The format of these files is defined here: https://hashcat.net/wiki/doku.php?id=oclhashcat#parsing_the_restore-file
 
 # Requirements
@@ -16,7 +16,7 @@ Software:
 * Enter the repository root folder:  
     cd analyze_hc_restore
 * Run it:  
-    ./analyze_hc_restore.pl oclHashcat.restore
+    ./analyze_hc_restore.pl hashcat.restore
 * Check output
 
 # Usage and command line options
