@@ -1,7 +1,7 @@
 # About
 
 The goal of this project is to make the content of a hashcat .restore file human-readable.
-The format of these files is defined here: https://hashcat.net/wiki/doku.php?id=oclhashcat#parsing_the_restore-file
+The format of these files is defined here: https://hashcat.net/wiki/restore
 
 # Requirements
 

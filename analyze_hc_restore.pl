@@ -11,7 +11,7 @@ use warnings;
 # Constants
 #
 
-my $FILE_SIZE_MIN = 4 + 256 + 4 + 4 + 4 + 8 + 4;
+my $FILE_SIZE_MIN = 4 + 256 + 4 + 4 + 8 + 4;
 
 #
 # Helper functions
@@ -19,12 +19,12 @@ my $FILE_SIZE_MIN = 4 + 256 + 4 + 4 + 4 + 8 + 4;
 
 sub usage
 {
-  my $script_name = shift; 
+  my $script_name = shift;
 
   print "Usage: $script_name [OPTIONS] RESTORE_FILE.restore\n\n";
 
   print "where [OPTIONS] can be:\n";
-  print "$script_name specific OPTIONS\n";
+  print "$script_name specific OPTIONS:\n";
   print "-h | --help                      Show this usage\n";
   print "-f | --file FILE                 Set the output file. Specify the file where this script should write to if some options are being modified\n";
   print "-Q | --quiet-mode                Print only what is necessary, don't print .restore file info etc\n";
@@ -91,25 +91,24 @@ sub print_file_content
 
   $full_arguments =~ s/\n/ /g;
 
-  my $version = sprintf ("%.02f", ($contents{'version_bin'} / 100));
+  my $version = sprintf ("%.02f", ($contents{'version'} / 100));
 
-  print "hashcat .restore file: '$file_name':\n";
-  print "  hashcat version.: " . $version . "\n";
-  print "  working directory..: " . $contents{'cwd'} . "\n";
-  print "  process id.........: " . $contents{'pid'} . "\n";
-  print "  dictionary number..: " . $contents{'dictpos'} . "\n";
-  print "  mask number........: " . $contents{'maskpos'} . "\n";
-  print "  password current...: " . $contents{'pw_cur'} . "\n";
-  print "  number of arguments: " . $contents{'argc'} . "\n";
-  print "  full arguments.....: " . $full_arguments . "\n";
+  print "hashcat .restore file: $file_name"                . "\n";
+  print "  hashcat version....: " . $version               . "\n";
+  print "  working directory..: " . $contents{'cwd'}       . "\n";
+  print "  dictionary number..: " . $contents{'dicts_pos'} . "\n";
+  print "  mask number........: " . $contents{'masks_pos'} . "\n";
+  print "  current password...: " . $contents{'words_cur'} . "\n";
+  print "  number of arguments: " . $contents{'argc'}      . "\n";
+  print "  full arguments.....: " . $full_arguments        . "\n";
 }
 
 sub analyze_file
 {
-  my $file  = shift;
+  my $file = shift;
   my $quiet_mode = shift;
 
-  if (! open (FP, "<$file")) 
+  if (! open (FP, "<$file"))
   {
     print "ERROR: could not open .restore file '$file'\n";
 
@@ -153,57 +152,55 @@ sub analyze_file
     exit (1);
   }
 
-  # pid
-
-  my $pid = 0;
-
-  if (read (FP, $pid, 4) != 4)
-  {
-    print "ERROR: could not read the process id\n";
-
-    exit (1);
-  }
-
-  $pid = unpack ("L*", $pid);
-
-  # dictpos
+  # dicts_pos
 
   my $dictionary_pos = 0;
 
   if (read (FP, $dictionary_pos, 4) != 4)
   {
-    print "ERROR: could not read the number of dictionary that was last processed\n";
+    print "ERROR: could not read the number of dictionaries that was last processed\n";
 
     exit (1);
   }
 
   $dictionary_pos = unpack ("L*", $dictionary_pos);
 
-  # maskpos
+  # masks_pos
 
-  my $maskfile_pos = 0;
+  my $masks_pos = 0;
 
-  if (read (FP, $maskfile_pos, 4) != 4)
+  if (read (FP, $masks_pos, 4) != 4)
   {
     print "ERROR: could not read the .hcmask file position\n";
 
     exit (1);
   }
 
-  $maskfile_pos = unpack ("L*", $maskfile_pos);
+  $masks_pos = unpack ("L*", $masks_pos);
 
-  # pw_cur
+  # skip (alignment)
 
-  my $pw_cur = 0;
+  my $skipped = "";
 
-  if (read (FP, $pw_cur , 8) != 8)
+  if (read (FP, $skipped, 4) != 4)
+  {
+    print "ERROR: could not skip 4 bytes\n";
+
+    exit (1);
+  }
+
+  # words_cur
+
+  my $words_cur = 0;
+
+  if (read (FP, $words_cur, 8) != 8)
   {
     print "ERROR: could not read the 'password current' value\n";
 
     exit (1);
   }
 
-  $pw_cur = unpack ("Q*", $pw_cur);
+  $words_cur = unpack ("Q*", $words_cur);
 
   # argc
 
@@ -218,13 +215,22 @@ sub analyze_file
 
   $argc = unpack ("L*", $argc);
 
-  # skip
+  # skip (alignment)
 
-  my $skipped = "";
-
-  if (read (FP, $skipped, 9) != 9)
+  if (read (FP, $skipped, 4) != 4)
   {
-    print "ERROR: could not skip 9 bytes\n";
+    print "ERROR: could not skip 4 bytes\n";
+
+    exit (1);
+  }
+
+  # argv pointer
+
+  my $argv_ptr;
+
+  if (read (FP, $argv_ptr, 8) != 8)
+  {
+    print "ERROR: could not read the argument list (argv)\n";
 
     exit (1);
   }
@@ -246,15 +252,14 @@ sub analyze_file
 
   my %file_contents =
   (
-    'version_bin' => $version_num,
-    'cwd' => $current_working_directory,
-    'pid' => $pid,
-    'dictpos' => $dictionary_pos,
-    'maskpos' => $maskfile_pos,
-    'pw_cur'  => $pw_cur,
-    'argc'    => $argc,
-    'skipped' => $skipped,
-    'argv'    => $argv
+    'version'   => $version_num,
+    'cwd'       => $current_working_directory,
+    'dicts_pos' => $dictionary_pos,
+    'masks_pos' => $masks_pos,
+    'words_cur' => $words_cur,
+    'argc'      => $argc,
+    'argv_ptr'  => $argv_ptr,
+    'argv'      => $argv
   );
 
   # print content if quiet_mode is not enabled
@@ -272,7 +277,7 @@ sub write_modified_file
   my $file = shift;
   my $file_contents = shift;
 
-  if (! open (FP, ">$file")) 
+  if (! open (FP, ">$file"))
   {
     print "ERROR: could not open .restore file '$file'\n";
 
@@ -287,35 +292,39 @@ sub write_modified_file
 
   # version number
 
-  print FP pack ("L*", $contents{'version_bin'});
+  print FP pack ("L*", $contents{'version'});
 
   # current working directory (must be always exactly 256 chars long)
 
   print FP $contents{'cwd'} . ("\x00" x (256 - length ($contents{'cwd'})));
 
-  # process id
-
-  print FP pack ("L*", $contents{'pid'});
-
   # current dictionary
 
-  print FP pack ("L*", $contents{'dictpos'});
+  print FP pack ("L*", $contents{'dicts_pos'});
 
   # current mask number
 
-  print FP pack ("L*", $contents{'maskpos'});
+  print FP pack ("L*", $contents{'masks_pos'});
+
+  # skipped (alignment)
+
+  print FP "\x00" x 4;
 
   # password current
 
-  print FP pack ("Q*", $contents{'pw_cur'});
+  print FP pack ("Q*", $contents{'words_cur'});
 
   # argument count
 
   print FP pack ("L*", $contents{'argc'});
 
-  # skipped
+  # skipped (alignment)
 
-  print FP $contents{'skipped'};
+  print FP "\x00" x 4;
+
+  # argv pointer
+
+  print FP $contents{'argv_ptr'};
 
   # argv
 
@@ -703,7 +712,7 @@ my $script_name = $0;
 
 if (scalar (@ARGV) < 1)
 {
-  print "ERROR: please specify the .restore file as command line argument\n\n"; 
+  print "ERROR: please specify the .restore file as command line argument\n\n";
 
   usage ($script_name);
 
@@ -718,9 +727,9 @@ my $output_file = "";
 
 my $version = "";
 my $cwd = "";
-my $dictpos = "";
-my $maskpos = "";
-my $pw_cur  = "";
+my $dicts_pos = "";
+my $masks_pos = "";
+my $words_cur = "";
 my $cmd_line = "";
 
 my $quiet = "";
@@ -782,17 +791,17 @@ foreach my $arg (@ARGV)
     {
       $cwd = $arg;
     }
-    elsif ($switch eq "dictpos")
+    elsif ($switch eq "dicts_pos")
     {
-      $dictpos = $arg;
+      $dicts_pos = $arg;
     }
-    elsif ($switch eq "maskpos")
+    elsif ($switch eq "masks_pos")
     {
-      $maskpos = $arg;
+      $masks_pos = $arg;
     }
-    elsif ($switch eq "pw_cur")
+    elsif ($switch eq "words_cur")
     {
-      $pw_cur = $arg;
+      $words_cur = $arg;
     }
     elsif ($switch eq "line")
     {
@@ -951,15 +960,15 @@ foreach my $arg (@ARGV)
     }
     elsif (($arg eq "-D") || ($arg eq "--dictpos"))
     {
-      $switch = "dictpos";
+      $switch = "dicts_pos";
     }
     elsif (($arg eq "-M") || ($arg eq "--maskpos"))
     {
-      $switch = "maskpos";
+      $switch = "masks_pos";
     }
     elsif (($arg eq "-P") || ($arg eq "--pw_cur"))
     {
-      $switch = "pw_cur";
+      $switch = "words_cur";
     }
     elsif (($arg eq "-L") || ($arg eq "--line"))
     {
@@ -1170,7 +1179,7 @@ if ($input_file eq $output_file)
 
 my $restore_file_modified = 0;
 
-if (($version ne "") || ($cwd ne "") || ($dictpos ne "") || ($maskpos ne "") || ($pw_cur ne "") || ($cmd_line ne "") || ($quiet ne "") || ($status ne "") || ($status_automat ne "") || ($outfile_autohex_disable ne "") || ($remove ne "") || ($potfile_disable ne "") || ($logfile_disable ne "") || ($gpu_temp_disable ne "") || ($increment ne "") || ($runtime_param ne "") || ($session_param ne "") || ($outfile_param ne "") || ($outfile_format_param ne "") || ($status_timer_param ne "") || ($outfile_check_timer_param ne "") || ($remove_timer_param ne "") || ($debug_mode_param ne "") || ($debug_file_param ne "") || ($induction_dir_param ne "") || ($outfile_check_dir_param ne "") || ($segment_size_param ne "") || ($gpu_devices_param ne "") || ($workload_profile_param ne "") || ($gpu_accel_param ne "") || ($gpu_loops_param ne "") || ($gpu_temp_abort_param ne "") || ($gpu_temp_retain_param ne "") || ($scrypt_tmto_param ne "") || ($rule_left_param ne "") || ($rule_right_param ne "") || ($rules_file_param ne "") || ($generate_rules_param ne "") || ($custom_charset1_param ne "") || ($custom_charset2_param ne "") || ($custom_charset3_param ne "") || ($custom_charset4_param ne "") || ($increment_min_param ne "") || ($increment_max_param ne "") || ($set_options ne "") || ($remove_options ne ""))
+if (($version ne "") || ($cwd ne "") || ($dicts_pos ne "") || ($masks_pos ne "") || ($words_cur ne "") || ($cmd_line ne "") || ($quiet ne "") || ($status ne "") || ($status_automat ne "") || ($outfile_autohex_disable ne "") || ($remove ne "") || ($potfile_disable ne "") || ($logfile_disable ne "") || ($gpu_temp_disable ne "") || ($increment ne "") || ($runtime_param ne "") || ($session_param ne "") || ($outfile_param ne "") || ($outfile_format_param ne "") || ($status_timer_param ne "") || ($outfile_check_timer_param ne "") || ($remove_timer_param ne "") || ($debug_mode_param ne "") || ($debug_file_param ne "") || ($induction_dir_param ne "") || ($outfile_check_dir_param ne "") || ($segment_size_param ne "") || ($gpu_devices_param ne "") || ($workload_profile_param ne "") || ($gpu_accel_param ne "") || ($gpu_loops_param ne "") || ($gpu_temp_abort_param ne "") || ($gpu_temp_retain_param ne "") || ($scrypt_tmto_param ne "") || ($rule_left_param ne "") || ($rule_right_param ne "") || ($rules_file_param ne "") || ($generate_rules_param ne "") || ($custom_charset1_param ne "") || ($custom_charset2_param ne "") || ($custom_charset3_param ne "") || ($custom_charset4_param ne "") || ($increment_min_param ne "") || ($increment_max_param ne "") || ($set_options ne "") || ($remove_options ne ""))
 {
   $restore_file_modified = 1;
 }
@@ -1181,7 +1190,7 @@ my %file_info = analyze_file ($input_file, $quiet_mode);
 
 if (($quiet_mode == 1) && ($restore_file_modified == 0))
 {
-  print "\nERROR: you either need to set some modified options for the .restore file or not set --quiet-mode\n";
+  print "\nERROR: you either need to set some modified options for the .restore file or not use --quiet-mode\n";
 
   exit (1);
 }
@@ -1200,43 +1209,43 @@ if ($restore_file_modified == 1)
   if ($version ne "")
   {
     $version =~ s/[^0-9]//g;
-    $file_info{'version_bin'} = $version;
+    $file_info{'version'} = $version;
   }
 
-  if ($dictpos ne "")
+  if ($dicts_pos ne "")
   {
-    if ($dictpos !~ m/^[0-9]+$/)
+    if ($dicts_pos !~ m/^[0-9]+$/)
     {
       print "\nERROR: the value specified for the dictionary position must be numeric\n";
 
       exit (1);
     }
 
-    $file_info{'dictpos'} = $dictpos;
+    $file_info{'dicts_pos'} = $dicts_pos;
   }
 
-  if ($maskpos ne "")
+  if ($masks_pos ne "")
   {
-    if ($maskpos !~ m/^[0-9]+$/)
+    if ($masks_pos !~ m/^[0-9]+$/)
     {
       print "\nERROR: the value specified for the mask position must be numeric\n";
 
       exit (1);
     }
 
-    $file_info{'maskpos'} = $maskpos;
+    $file_info{'masks_pos'} = $masks_pos;
   }
 
-  if ($pw_cur ne "")
+  if ($words_cur ne "")
   {
-    if ($pw_cur !~ m/^[0-9]+$/)
+    if ($words_cur !~ m/^[0-9]+$/)
     {
       print "\nERROR: the value specified for the current password value must be numeric\n";
 
       exit (1);
     }
 
-    $file_info{'pw_cur'} = $pw_cur;
+    $file_info{'words_cur'} = $words_cur;
   }
 
   if (($cmd_line ne "") && (($set_options ne "") && ($remove_options ne "")))
@@ -1445,7 +1454,7 @@ if ($restore_file_modified == 1)
         exit (1);
       }
 
-      if ((! is_already_in_cmd_line ($file_info{'argv'}, "-r")) && (! is_already_in_cmd_line ($file_info{'argv'}, "--rules-file")) && 
+      if ((! is_already_in_cmd_line ($file_info{'argv'}, "-r")) && (! is_already_in_cmd_line ($file_info{'argv'}, "--rules-file")) &&
           (! is_already_in_cmd_line ($file_info{'argv'}, "-g")) && (! is_already_in_cmd_line ($file_info{'argv'}, "--generate-rules")))
       {
         print "\nERROR: the command line switch --debug-mode requires that hashcat uses some rules\n";
