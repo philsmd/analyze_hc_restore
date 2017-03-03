@@ -22,7 +22,8 @@ Software:
 
 # Usage and command line options
 
-A very interesting feature of this tool is, that it is able to modify .restore files (besides making them human-readable).
+A very interesting feature of this tool is, that it is able to modify .restore files (besides making them human-readable).  
+  
 To list the OPTIONS available use:  
     ./analyze_hc_restore.pl --help
 
