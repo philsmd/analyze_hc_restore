@@ -3,6 +3,7 @@
 # Author: philsmd
 # License: public domain
 # First released: January 2015
+# Last updated: March 2017
 
 use strict;
 use warnings;
@@ -1525,9 +1526,11 @@ if ($restore_file_modified == 1)
 
     if ($workload_profile_param ne "")
     {
-      if (($workload_profile_param != 1) && ($workload_profile_param != 2) && ($workload_profile_param != 3))
+      $workload_profile_param = int ($workload_profile_param);
+
+      if (($workload_profile_param != 1) && ($workload_profile_param != 2) && ($workload_profile_param != 3) && ($workload_profile_param != 4))
       {
-        print "\nERROR: the --workload-profile must be either 1, 2 or 3\n";
+        print "\nERROR: the --workload-profile must be either 1, 2, 3, 4\n";
 
         exit (1);
       }
