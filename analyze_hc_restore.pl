@@ -65,6 +65,7 @@ sub usage
   print "-w | --workload-profile NUM      Set the workload profile to NUM; select between the performance profiles 1 (reduced), 2 (default) or 3 (tuned)\n";
   print "-n | --gpu-accel NUM             Set the gpu acceleration to NUM. 1, 8, 40, 80, 160\n";
   print "-u | --gpu-loops NUM             Set the gpu loops to NUM. 8 - 1024\n";
+  print "-R | --force                     Set the --force command line switch (REQUIRED if using -n -u params)\n";
   print "-a | --gpu-temp-abort NUM        Set the --gpu-temp-abort to NUM degrees\n";
   print "-m | --gpu-temp-retain NUM       Set the --gpu-temp-retain to NUM degrees\n";
   print "-y | --scrypt-tmto NUM           Set the time/memory trade-off value --scrypt-tmto to NUM (for scrypt only)\n";
@@ -761,6 +762,7 @@ my $gpu_devices_param = "";
 my $workload_profile_param = "";
 my $gpu_accel_param = "";
 my $gpu_loops_param = "";
+my $gpu_force = "";
 my $gpu_temp_abort_param = "";
 my $gpu_temp_retain_param = "";
 my $scrypt_tmto_param = "";
@@ -1073,13 +1075,17 @@ foreach my $arg (@ARGV)
     {
       $optimized_kernel = "1";
     }
-    elsif (($arg eq "-n") || ($arg eq "--gpu-accel"))
+    elsif (($arg eq "-n") || ($arg eq "-n"))
     {
       $switch = "gpu-accel";
     }
-    elsif (($arg eq "-u") || ($arg eq "--gpu-loops"))
+    elsif (($arg eq "-u") || ($arg eq "-u"))
     {
       $switch = "gpu-loops";
+    }
+    elsif (($arg eq "-R") || ($arg eq "--force"))
+    {
+      $gpu_force = "1";
     }
     elsif (($arg eq "-a") || ($arg eq "--gpu-temp-abort"))
     {
@@ -1186,7 +1192,7 @@ if ($input_file eq $output_file)
 
 my $restore_file_modified = 0;
 
-if (($version ne "") || ($cwd ne "") || ($dicts_pos ne "") || ($masks_pos ne "") || ($words_cur ne "") || ($cmd_line ne "") || ($quiet ne "") || ($status ne "") || ($status_automat ne "") || ($outfile_autohex_disable ne "") || ($remove ne "") || ($potfile_disable ne "") || ($logfile_disable ne "") || ($gpu_temp_disable ne "") || ($increment ne "") || ($optimized_kernel ne "") || ($runtime_param ne "") || ($session_param ne "") || ($outfile_param ne "") || ($outfile_format_param ne "") || ($status_timer_param ne "") || ($outfile_check_timer_param ne "") || ($remove_timer_param ne "") || ($debug_mode_param ne "") || ($debug_file_param ne "") || ($induction_dir_param ne "") || ($outfile_check_dir_param ne "") || ($segment_size_param ne "") || ($gpu_devices_param ne "") || ($workload_profile_param ne "") || ($gpu_accel_param ne "") || ($gpu_loops_param ne "") || ($gpu_temp_abort_param ne "") || ($gpu_temp_retain_param ne "") || ($scrypt_tmto_param ne "") || ($rule_left_param ne "") || ($rule_right_param ne "") || ($rules_file_param ne "") || ($generate_rules_param ne "") || ($custom_charset1_param ne "") || ($custom_charset2_param ne "") || ($custom_charset3_param ne "") || ($custom_charset4_param ne "") || ($increment_min_param ne "") || ($increment_max_param ne "") || ($set_options ne "") || ($remove_options ne ""))
+if (($version ne "") || ($cwd ne "") || ($dicts_pos ne "") || ($masks_pos ne "") || ($words_cur ne "") || ($cmd_line ne "") || ($quiet ne "") || ($status ne "") || ($status_automat ne "") || ($outfile_autohex_disable ne "") || ($remove ne "") || ($potfile_disable ne "") || ($logfile_disable ne "") || ($gpu_temp_disable ne "") || ($increment ne "") || ($optimized_kernel ne "") || ($runtime_param ne "") || ($session_param ne "") || ($outfile_param ne "") || ($outfile_format_param ne "") || ($status_timer_param ne "") || ($outfile_check_timer_param ne "") || ($remove_timer_param ne "") || ($debug_mode_param ne "") || ($debug_file_param ne "") || ($induction_dir_param ne "") || ($outfile_check_dir_param ne "") || ($segment_size_param ne "") || ($gpu_devices_param ne "") || ($workload_profile_param ne "") || ($gpu_accel_param ne "") || ($gpu_loops_param ne "") || ($gpu_force ne "") || ($gpu_temp_abort_param ne "") || ($gpu_temp_retain_param ne "") || ($scrypt_tmto_param ne "") || ($rule_left_param ne "") || ($rule_right_param ne "") || ($rules_file_param ne "") || ($generate_rules_param ne "") || ($custom_charset1_param ne "") || ($custom_charset2_param ne "") || ($custom_charset3_param ne "") || ($custom_charset4_param ne "") || ($increment_min_param ne "") || ($increment_max_param ne "") || ($set_options ne "") || ($remove_options ne ""))
 {
   $restore_file_modified = 1;
 }
@@ -1560,7 +1566,7 @@ if ($restore_file_modified == 1)
         exit (1);
       }
 
-      my @options = ("--gpu-accel", "-n");
+      my @options = ("-n", "--gpu-accel");
 
       add_cmd_line_param (\%file_info, \@options, $gpu_accel_param);
     }
@@ -1574,9 +1580,16 @@ if ($restore_file_modified == 1)
         exit (1);
       }
 
-      my @options = ("--gpu-loops", "-u");
+      my @options = ("-u", "--gpu-loops");
 
       add_cmd_line_param (\%file_info, \@options, $gpu_loops_param);
+    }
+    
+    if ($gpu_force eq "1")
+    {
+        print "\nWARNING: adding --force to the command line overrides warnings, do not report related errors\n";
+        
+      add_cmd_line_switch (\%file_info, "--force");
     }
 
     if ($gpu_temp_abort_param ne "")
