@@ -34,6 +34,7 @@ To list the OPTIONS available use:
 * all bug fixes are welcome
 * testing with different .restore files and/or write tests
 * solve and remove the TODOs (if any exist)
+* improve hash performance without restarting long jobs
 * and,and,and
 
 # Credits and Contributors 
