@@ -3,7 +3,7 @@
 # Author: philsmd
 # License: public domain
 # First released: January 2015
-# Last updated: March 2017
+# Last updated: September 2021
 
 use strict;
 use warnings;
@@ -63,9 +63,9 @@ sub usage
   print "-d | --gpu-devices VALUE         Set the --gpu-devices to the comma-separated list given by VALUE\n";
   print "-O | --optimized-kernel-enable   Set the --optimized-kernel-enable command line switch\n";
   print "-w | --workload-profile NUM      Set the workload profile to NUM; select between the performance profiles 1 (reduced), 2 (default) or 3 (tuned)\n";
-  print "-n | --gpu-accel NUM             Set the gpu acceleration to NUM. 1, 8, 40, 80, 160\n";
-  print "-u | --gpu-loops NUM             Set the gpu loops to NUM. 8 - 1024\n";
-  print "-R | --force                     Set the --force command line switch (REQUIRED if using -n -u params)\n";
+  print "-n | --kernel-accel NUM          Set the --kernel-acceleration to NUM. 1, 8, 40, 80, 160\n";
+  print "-u | --kernel-loops NUM          Set the --kernel-loops to NUM. 8 - 1024\n";
+  print "-R | --force                     Set the --force command line switch (REQUIRED if electing to use -n -u params over the officially recommended '-w' option\n";
   print "-a | --gpu-temp-abort NUM        Set the --gpu-temp-abort to NUM degrees\n";
   print "-m | --gpu-temp-retain NUM       Set the --gpu-temp-retain to NUM degrees\n";
   print "-y | --scrypt-tmto NUM           Set the time/memory trade-off value --scrypt-tmto to NUM (for scrypt only)\n";
@@ -868,11 +868,11 @@ foreach my $arg (@ARGV)
     {
       $workload_profile_param = $arg;
     }
-    elsif ($switch eq "gpu-accel")
+    elsif ($switch eq "kernel-accel")
     {
       $gpu_accel_param = $arg;
     }
-    elsif ($switch eq "gpu-loops")
+    elsif ($switch eq "kernel-loops")
     {
       $gpu_loops_param = $arg;
     }
@@ -1075,13 +1075,13 @@ foreach my $arg (@ARGV)
     {
       $optimized_kernel = "1";
     }
-    elsif (($arg eq "-n") || ($arg eq "-n"))
+    elsif (($arg eq "-n") || ($arg eq "--kernel-accel"))
     {
-      $switch = "gpu-accel";
+      $switch = "kernel-accel";
     }
-    elsif (($arg eq "-u") || ($arg eq "-u"))
+    elsif (($arg eq "-u") || ($arg eq "--kernel-loops"))
     {
-      $switch = "gpu-loops";
+      $switch = "kernel-loops";
     }
     elsif (($arg eq "-R") || ($arg eq "--force"))
     {
@@ -1561,12 +1561,19 @@ if ($restore_file_modified == 1)
     {
       if ($gpu_accel_param !~ m/^[0-9]+$/)
       {
-        print "\nERROR: unsupported value for --gpu-accel specified, must be numeric\n";
+        print "\nERROR: unsupported value for --kernel-accel specified, must be numeric\n";
 
         exit (1);
       }
 
-      my @options = ("-n", "--gpu-accel");
+      if ((! is_already_in_cmd_line ($file_info{'argv'}, "-w")) && (! is_already_in_cmd_line ($file_info{'argv'}, "--workload-profile")))
+      {
+        print "\nERROR: setting a value for --kernel-accel is not possible if --workload-profile is set, remove -w if you want to set --kernel-accel\n";
+
+        exit (1);
+      }
+
+      my @options = ("-n", "--kernel-accel");
 
       add_cmd_line_param (\%file_info, \@options, $gpu_accel_param);
     }
@@ -1575,19 +1582,26 @@ if ($restore_file_modified == 1)
     {
       if ($gpu_loops_param !~ m/^[0-9]+$/)
       {
-        print "\nERROR: unsupported value for --gpu-loops specified, must be numeric\n";
+        print "\nERROR: unsupported value for --kernel-loops specified, must be numeric\n";
 
         exit (1);
       }
 
-      my @options = ("-u", "--gpu-loops");
+      if ((! is_already_in_cmd_line ($file_info{'argv'}, "-w")) && (! is_already_in_cmd_line ($file_info{'argv'}, "--workload-profile")))
+      {
+        print "\nERROR: setting a value for --kernel-loops is not possible if --workload-profile is set, remove -w if you want to set --kernel-loops\n";
+
+        exit (1);
+      }
+
+      my @options = ("-u", "--kernel-loops");
 
       add_cmd_line_param (\%file_info, \@options, $gpu_loops_param);
     }
-    
+
     if ($gpu_force eq "1")
     {
-        print "\nWARNING: adding --force to the command line overrides warnings, do not report related errors\n";
+      print "\nWARNING: adding --force to the command line overrides warnings, do NOT report related errors, Use at your own risk\n";
         
       add_cmd_line_switch (\%file_info, "--force");
     }
