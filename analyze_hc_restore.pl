@@ -63,8 +63,8 @@ sub usage
   print "-d | --gpu-devices VALUE         Set the --gpu-devices to the comma-separated list given by VALUE\n";
   print "-O | --optimized-kernel-enable   Set the --optimized-kernel-enable command line switch\n";
   print "-w | --workload-profile NUM      Set the workload profile to NUM; select between the performance profiles 1 (reduced), 2 (default) or 3 (tuned)\n";
-  print "-n | --kernel-accel NUM          Set the --kernel-acceleration to NUM. 1, 8, 40, 80, 160\n";
-  print "-u | --kernel-loops NUM          Set the --kernel-loops to NUM. 8 - 1024\n";
+  print "-n | --kernel-accel NUM          Set the --kernel-accel (outerloop step size) to NUM. 1, 8, 40, 80, 160\n";
+  print "-u | --kernel-loops NUM          Set the --kernel-loops (innerloop step size) to NUM. 8 - 1024\n";
   print "-R | --force                     Set the --force command line switch (REQUIRED if electing to use -n -u params over the officially recommended '-w' option\n";
   print "-a | --gpu-temp-abort NUM        Set the --gpu-temp-abort to NUM degrees\n";
   print "-m | --gpu-temp-retain NUM       Set the --gpu-temp-retain to NUM degrees\n";
