@@ -60,7 +60,7 @@ sub usage
   print "-N | --induction-dir VALUE       Set the --induction-dir to the folder specified by VALUE\n";
   print "-K | --outfile-check-dir VALUE   Set the --outfile-check-dir to the folder specified by VALUE\n";
   print "-c | --segment-size NUM          Set the --segment-size to NUM\n";
-  print "-d | --gpu-devices VALUE         Set the --gpu-devices to the comma-separated list given by VALUE\n";
+  print "-d | --backend-devices VALUE         Set the --backend-devices to the comma-separated list given by VALUE\n";
   print "-O | --optimized-kernel-enable   Set the --optimized-kernel-enable command line switch\n";
   print "-w | --workload-profile NUM      Set the workload profile to NUM; select between the performance profiles 1 (reduced), 2 (default) or 3 (tuned)\n";
   print "-n | --kernel-accel NUM          Set the --kernel-accel (outerloop step size) to NUM. 1, 8, 40, 80, 160\n";
@@ -758,7 +758,7 @@ my $debug_file_param = "";
 my $induction_dir_param = "";
 my $outfile_check_dir_param = "";
 my $segment_size_param = "";
-my $gpu_devices_param = "";
+my $backend_devices_param = "";
 my $workload_profile_param = "";
 my $gpu_accel_param = "";
 my $gpu_loops_param = "";
@@ -860,9 +860,9 @@ foreach my $arg (@ARGV)
     {
       $segment_size_param = $arg;
     }
-    elsif ($switch eq "gpu-devices")
+    elsif ($switch eq "backend-devices")
     {
-      $gpu_devices_param = $arg;
+      $backend_devices_param = $arg;
     }
     elsif ($switch eq "workload-profile")
     {
@@ -1063,9 +1063,9 @@ foreach my $arg (@ARGV)
     {
       $switch = "segment-size";
     }
-    elsif (($arg eq "-d") || ($arg eq "--gpu-devices"))
+    elsif (($arg eq "-d") || ($arg eq "--backend-devices"))
     {
-      $switch = "gpu-devices";
+      $switch = "backend-devices";
     }
     elsif (($arg eq "-w") || ($arg eq "--workload-profile"))
     {
@@ -1192,7 +1192,7 @@ if ($input_file eq $output_file)
 
 my $restore_file_modified = 0;
 
-if (($version ne "") || ($cwd ne "") || ($dicts_pos ne "") || ($masks_pos ne "") || ($words_cur ne "") || ($cmd_line ne "") || ($quiet ne "") || ($status ne "") || ($status_automat ne "") || ($outfile_autohex_disable ne "") || ($remove ne "") || ($potfile_disable ne "") || ($logfile_disable ne "") || ($gpu_temp_disable ne "") || ($increment ne "") || ($optimized_kernel ne "") || ($runtime_param ne "") || ($session_param ne "") || ($outfile_param ne "") || ($outfile_format_param ne "") || ($status_timer_param ne "") || ($outfile_check_timer_param ne "") || ($remove_timer_param ne "") || ($debug_mode_param ne "") || ($debug_file_param ne "") || ($induction_dir_param ne "") || ($outfile_check_dir_param ne "") || ($segment_size_param ne "") || ($gpu_devices_param ne "") || ($workload_profile_param ne "") || ($gpu_accel_param ne "") || ($gpu_loops_param ne "") || ($gpu_force ne "") || ($gpu_temp_abort_param ne "") || ($gpu_temp_retain_param ne "") || ($scrypt_tmto_param ne "") || ($rule_left_param ne "") || ($rule_right_param ne "") || ($rules_file_param ne "") || ($generate_rules_param ne "") || ($custom_charset1_param ne "") || ($custom_charset2_param ne "") || ($custom_charset3_param ne "") || ($custom_charset4_param ne "") || ($increment_min_param ne "") || ($increment_max_param ne "") || ($set_options ne "") || ($remove_options ne ""))
+if (($version ne "") || ($cwd ne "") || ($dicts_pos ne "") || ($masks_pos ne "") || ($words_cur ne "") || ($cmd_line ne "") || ($quiet ne "") || ($status ne "") || ($status_automat ne "") || ($outfile_autohex_disable ne "") || ($remove ne "") || ($potfile_disable ne "") || ($logfile_disable ne "") || ($gpu_temp_disable ne "") || ($increment ne "") || ($optimized_kernel ne "") || ($runtime_param ne "") || ($session_param ne "") || ($outfile_param ne "") || ($outfile_format_param ne "") || ($status_timer_param ne "") || ($outfile_check_timer_param ne "") || ($remove_timer_param ne "") || ($debug_mode_param ne "") || ($debug_file_param ne "") || ($induction_dir_param ne "") || ($outfile_check_dir_param ne "") || ($segment_size_param ne "") || ($backend_devices_param ne "") || ($workload_profile_param ne "") || ($gpu_accel_param ne "") || ($gpu_loops_param ne "") || ($gpu_force ne "") || ($gpu_temp_abort_param ne "") || ($gpu_temp_retain_param ne "") || ($scrypt_tmto_param ne "") || ($rule_left_param ne "") || ($rule_right_param ne "") || ($rules_file_param ne "") || ($generate_rules_param ne "") || ($custom_charset1_param ne "") || ($custom_charset2_param ne "") || ($custom_charset3_param ne "") || ($custom_charset4_param ne "") || ($increment_min_param ne "") || ($increment_max_param ne "") || ($set_options ne "") || ($remove_options ne ""))
 {
   $restore_file_modified = 1;
 }
@@ -1527,18 +1527,18 @@ if ($restore_file_modified == 1)
       add_cmd_line_param (\%file_info, \@options, $segment_size_param);
     }
 
-    if ($gpu_devices_param ne "")
+    if ($backend_devices_param ne "")
     {
-      if ($gpu_devices_param !~ m/^[0-9, ]+$/)
+      if ($backend_devices_param !~ m/^[0-9, ]+$/)
       {
-        print "\nERROR: unsupported value for --gpu-devices specified, must be a semi-colon-separated list of numbers\n";
+        print "\nERROR: unsupported value for --backend-devices specified, must be a semi-colon-separated list of numbers\n";
 
         exit (1);
       }
 
-      my @options = ("--gpu-devices", "-d");
+      my @options = ("--backend-devices", "-d");
 
-      add_cmd_line_param (\%file_info, \@options, $gpu_devices_param);
+      add_cmd_line_param (\%file_info, \@options, $backend_devices_param);
     }
 
     if ($workload_profile_param ne "")
