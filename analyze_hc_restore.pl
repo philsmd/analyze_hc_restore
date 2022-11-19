@@ -60,7 +60,7 @@ sub usage
   print "-N | --induction-dir VALUE       Set the --induction-dir to the folder specified by VALUE\n";
   print "-K | --outfile-check-dir VALUE   Set the --outfile-check-dir to the folder specified by VALUE\n";
   print "-c | --segment-size NUM          Set the --segment-size to NUM\n";
-  print "-d | --backend-devices VALUE         Set the --backend-devices to the comma-separated list given by VALUE\n";
+  print "-d | --backend-devices VALUE     Set the --backend-devices to the comma-separated list given by VALUE\n";
   print "-O | --optimized-kernel-enable   Set the --optimized-kernel-enable command line switch\n";
   print "-w | --workload-profile NUM      Set the workload profile to NUM; select between the performance profiles 1 (reduced), 2 (default) or 3 (tuned)\n";
   print "-n | --kernel-accel NUM          Set the --kernel-accel (outerloop step size) to NUM. 1, 8, 40, 80, 160\n";
