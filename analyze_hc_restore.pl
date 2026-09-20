@@ -65,7 +65,7 @@ sub usage
   print "-w | --workload-profile NUM      Set the workload profile to NUM; select between the performance profiles 1 (reduced), 2 (default) or 3 (tuned)\n";
   print "-n | --kernel-accel NUM          Set the --kernel-accel (outerloop step size) to NUM. 1, 8, 40, 80, 160\n";
   print "-u | --kernel-loops NUM          Set the --kernel-loops (innerloop step size) to NUM. 8 - 1024\n";
-  print "-R | --force                     Set the --force command line switch (REQUIRED if electing to use -n -u params over the officially recommended '-w' option\n";
+  print "-! | --force                     Set the --force command line switch (REQUIRED if electing to use -n -u params over the officially recommended '-w' option\n";
   print "-a | --gpu-temp-abort NUM        Set the --gpu-temp-abort to NUM degrees\n";
   print "-m | --gpu-temp-retain NUM       Set the --gpu-temp-retain to NUM degrees\n";
   print "-y | --scrypt-tmto NUM           Set the time/memory trade-off value --scrypt-tmto to NUM (for scrypt only)\n";
@@ -561,7 +561,7 @@ sub add_cmd_line_param
   {
     my $char = substr ($file_info->{'argv'}, $i, 1);
 
-    if ($char eq "\n")
+    if (($found eq "") && ($char eq "=") || ($char eq "\n"))
     {
       $option = substr ($file_info->{'argv'}, $offset, $i - $offset);
 
@@ -606,6 +606,7 @@ sub rem_cmd_line_param
   # try to find if parameter is present
 
   my $option = "";
+  my $count  = 0;
   my $offset = 0;
   my $start  = 0;
   my $end    = 0;
@@ -615,9 +616,10 @@ sub rem_cmd_line_param
   {
     my $char = substr ($file_info->{'argv'}, $i, 1);
 
-    if ($char eq "\n")
+    if (($count eq 0) && ($char eq "=") || ($char eq "\n"))
     {
       $option = substr ($file_info->{'argv'}, $offset, $i - $offset);
+      my @splitted_option = split_on_first_equal_sign ($option);
 
       if ($found ne "")
       {
@@ -631,12 +633,14 @@ sub rem_cmd_line_param
         else
         {
           $found = "";
+          $count = 0;
         }
       }
 
-      if ($option eq $param_option)
+      if ($splitted_option[0] eq $param_option)
       {
-        $found = $option;
+        $found = $param_option;
+        $count = scalar (@splitted_option);
       }
       else
       {
@@ -650,7 +654,7 @@ sub rem_cmd_line_param
   {
     substr ($file_info->{'argv'}, $start, $end - $start) = "";
 
-    $file_info->{'argc'} -= 2;
+    $file_info->{'argc'} -= 3 - $count;
   }
   else
   {
@@ -1083,7 +1087,7 @@ foreach my $arg (@ARGV)
     {
       $switch = "kernel-loops";
     }
-    elsif (($arg eq "-R") || ($arg eq "--force"))
+    elsif (($arg eq "-!") || ($arg eq "--force"))
     {
       $gpu_force = "1";
     }
